@@ -1,0 +1,86 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 定位 csc.exe
+        shell: pwsh
+        run: |
+          $csc = "$env:WINDIR\Microsoft.NET\Framework64\v4.0.30319\csc.exe"
+          if (-not (Test-Path $csc)) {
+            $csc = "$env:WINDIR\Microsoft.NET\Framework\v4.0.30319\csc.exe"
+          }
+          if (-not (Test-Path $csc)) { throw "找不到 csc.exe" }
+          "CSC=$csc" | Out-File -FilePath $env:GITHUB_ENV -Append
+          Write-Host "using $csc"
+
+      - name: 编译
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path build | Out-Null
+          & $env:CSC -nologo -target:winexe -optimize+ `
+            -out:build\PhoneCoding.exe `
+            -r:System.dll -r:System.Drawing.dll -r:System.Windows.Forms.dll `
+            src\Core.cs src\Display.cs src\PhoneMode.cs src\UI.cs src\Program.cs
+          if ($LASTEXITCODE -ne 0) { throw "编译失败" }
+
+      - name: 冒烟测试
+        shell: pwsh
+        run: |
+          $out = & .\build\PhoneCoding.exe list 2>&1 | Out-String
+          Write-Host $out
+          if ($LASTEXITCODE -ne 0) { throw "程序启动失败 exit=$LASTEXITCODE" }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PhoneCoding-exe
+          path: build/PhoneCoding.exe
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 定位 csc.exe
+        shell: pwsh
+        run: |
+          $csc = "$env:WINDIR\Microsoft.NET\Framework64\v4.0.30319\csc.exe"
+          if (-not (Test-Path $csc)) { $csc = "$env:WINDIR\Microsoft.NET\Framework\v4.0.30319\csc.exe" }
+          "CSC=$csc" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: 编译
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path build | Out-Null
+          & $env:CSC -nologo -target:winexe -optimize+ `
+            -out:build\PhoneCoding.exe `
+            -r:System.dll -r:System.Drawing.dll -r:System.Windows.Forms.dll `
+            src\Core.cs src\Display.cs src\PhoneMode.cs src\UI.cs src\Program.cs
+          if ($LASTEXITCODE -ne 0) { throw "编译失败" }
+
+      - name: 打包
+        shell: pwsh
+        run: |
+          Copy-Item build\PhoneCoding.exe dist\PhoneCoding.exe -Force
+          Compress-Archive -Path dist\PhoneCoding.exe,install.bat,uninstall.bat,README.md -DestinationPath PhoneCoding-${{ github.ref_name }}.zip -Force
+
+      - name: 发布
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            build/PhoneCoding.exe
+            PhoneCoding-*.zip
+          generate_release_notes: true

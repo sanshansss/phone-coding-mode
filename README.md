@@ -33,14 +33,27 @@
 
 ## 装
 
-```
-1. 双击 build.bat        （编译，几十毫秒）
-2. 双击 install.bat      （复制到 AppData、开机自启、建桌面快捷方式）
+### 方式一：下载即用（推荐）
+
+1. 点右上角 **Code → Download ZIP**，解压
+2. 双击 **`install.bat`**
+
+就这样。不需要装 Visual Studio、不需要 .NET SDK、不需要管理员权限 —— 
+`dist/PhoneCoding.exe` 已经编译好了，安装脚本只是把它复制到 `%LOCALAPPDATA%`、
+设开机自启、在桌面建个快捷方式。
+
+### 方式二：自己编译
+
+```bat
+build.bat      :: 用 Win10/11 自带的 csc.exe 编译
+install.bat    :: 安装
 ```
 
-不需要装 Visual Studio，不需要 .NET SDK —— 用 Win10/11 自带的编译器。
+**卸载**：双击 `uninstall.bat`（会自动退出程序、删自启、删快捷方式）。
 
-**卸载**：双击 `uninstall.bat`。
+> 首次运行如果弹出 Windows SmartScreen 警告，是因为 exe 没有代码签名
+> （个人项目买证书太贵）。点「更多信息 → 仍要运行」即可。
+> 不放心的可以直接看 `src/` 里的源码，就 1500 行，没有任何联网行为。
 
 ---
 

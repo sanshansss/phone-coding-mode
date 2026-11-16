@@ -1,8 +1,8 @@
-# 编译产物
+# 编译中间产物（dist/PhoneCoding.exe 是要发布的，故意不忽略）
 build/
-*.exe
 *.pdb
 *.obj
+!dist/PhoneCoding.exe
 
 # 不要提交本地配置 / 日志
 config.ini

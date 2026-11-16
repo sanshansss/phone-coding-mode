@@ -12,6 +12,9 @@ echo.
 
 rem ---------- 1. 找可执行文件：优先用仓库里打包好的 ----------
 set SRC=
+rem 同级目录（Release 的 ZIP 解压后就长这样）
+if exist "PhoneCoding.exe" set SRC=PhoneCoding.exe
+rem 仓库结构
 if exist "dist\PhoneCoding.exe" set SRC=dist\PhoneCoding.exe
 if exist "build\PhoneCoding.exe" set SRC=build\PhoneCoding.exe
 
@@ -53,8 +56,8 @@ reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v PhoneCoding ^
   /t REG_SZ /d "\"%TARGET%\PhoneCoding.exe\"" /f >nul
 
 echo [5/5] 创建桌面快捷方式
-powershell -NoProfile -Command ^
-  "$s=(New-Object -ComObject WScript.Shell).CreateShortcut([Environment]::GetFolderPath('Desktop')+'\手机编程模式.lnk'); $s.TargetPath='%TARGET%\PhoneCoding.exe'; $s.WorkingDirectory='%TARGET%'; $s.Description='一键切换竖屏手机编程模式'; $s.Save()" >nul 2>&1
+set PC_TARGET=%TARGET%
+%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe -NoProfile -ExecutionPolicy Bypass -EncodedCommand JAB0ACAAPQAgACQAZQBuAHYAOgBQAEMAXwBUAEEAUgBHAEUAVAANAAoAJABXACAAPQAgAE4AZQB3AC0ATwBiAGoAZQBjAHQAIAAtAEMAbwBtAE8AYgBqAGUAYwB0ACAAVwBTAGMAcgBpAHAAdAAuAFMAaABlAGwAbAANAAoAJABQACAAPQAgAEoAbwBpAG4ALQBQAGEAdABoACAAKABbAEUAbgB2AGkAcgBvAG4AbQBlAG4AdABdADoAOgBHAGUAdABGAG8AbABkAGUAcgBQAGEAdABoACgAIgBEAGUAcwBrAHQAbwBwACIAKQApACAAIgBLYjpnFn8LeiFqD18uAGwAbgBrACIADQAKACQAUwAgAD0AIAAkAFcALgBDAHIAZQBhAHQAZQBTAGgAbwByAHQAYwB1AHQAKAAkAFAAKQANAAoAJABTAC4AVABhAHIAZwBlAHQAUABhAHQAaAAgAD0AIABKAG8AaQBuAC0AUABhAHQAaAAgACQAdAAgACIAUABoAG8AbgBlAEMAbwBkAGkAbgBnAC4AZQB4AGUAIgANAAoAJABTAC4AVwBvAHIAawBpAG4AZwBEAGkAcgBlAGMAdABvAHIAeQAgAD0AIAAkAHQADQAKACQAUwAuAEQAZQBzAGMAcgBpAHAAdABpAG8AbgAgAD0AIAAiAABOLpUHUmJj1npPXEtiOmcWfwt6IWoPXyIADQAKACQAUwAuAFMAYQB2AGUAKAApAA0ACgA= >nul 2>&1
 
 echo.
 echo 启动中...
